@@ -1,10 +1,9 @@
+using HospitalService.MessageConsumer.AzureBus;
 using HospitalService.MessageConsumer.Data;
 using HospitalService.MessageConsumer.Repositories;
-using HospitalService.MessageConsumer.RabbitMQ;
-using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
-using HospitalService.MessageConsumer.DTOs;
 
 namespace HospitalService.MessageConsumer
 {
@@ -19,18 +18,12 @@ namespace HospitalService.MessageConsumer
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<MessageDbContext>(opt => opt.UseNpgsql(Configuration.GetConnectionString("Connection")), ServiceLifetime.Transient);
-            services.AddScoped<IMessageConsumerRepository, MessageConsumerRepository>();
-            services.AddScoped<IConsumer<CreateObjectMessageDto>, MessageConsumerService>();
-            services.AddMassTransit(x =>
-            {
-                x.AddConsumer<MessageConsumerService>();
+            services.AddDbContext<MessageDbContext>(opt => opt.UseNpgsql(Environment.GetEnvironmentVariable("MESSAGEDB_KEY")), ServiceLifetime.Singleton);
 
-                x.UsingRabbitMq((context, cfg) =>
-                {
-                    cfg.ConfigureEndpoints(context);
-                });
-            });
+            services.AddScoped<IMessageConsumerRepository, MessageConsumerRepository>();
+
+            services.AddHostedService<MessageConsumerService>();
+
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
