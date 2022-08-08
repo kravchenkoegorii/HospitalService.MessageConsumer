@@ -1,8 +1,7 @@
-using HospitalService.MessageConsumer.AzureBus;
 using HospitalService.MessageConsumer.Data;
 using HospitalService.MessageConsumer.Repositories;
+using HospitalService.MessageConsumer.ServiceBusMessaging;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 
 namespace HospitalService.MessageConsumer
@@ -18,11 +17,12 @@ namespace HospitalService.MessageConsumer
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<MessageDbContext>(opt => opt.UseNpgsql(Environment.GetEnvironmentVariable("MESSAGEDB_KEY")), ServiceLifetime.Singleton);
-
+            var connectionString = Environment.GetEnvironmentVariable("MESSAGEDB_KEY");
+            services.AddDbContext<MessageDbContext>(opt => opt.UseNpgsql(connectionString), ServiceLifetime.Transient);
             services.AddScoped<IMessageConsumerRepository, MessageConsumerRepository>();
 
-            services.AddHostedService<MessageConsumerService>();
+            services.AddSingleton<IProcessData, ProcessData>();
+            services.AddSingleton<IServiceBusConsumer, ServiceBusConsumer>();
 
             services.AddControllers();
             services.AddSwaggerGen(c =>
@@ -57,6 +57,9 @@ namespace HospitalService.MessageConsumer
             });
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
+
+            var bus = app.ApplicationServices.GetService<IServiceBusConsumer>();
+            bus.RegisterOnMessageHandlerAndReceiveMessages().GetAwaiter().GetResult();
         }
     }
 }

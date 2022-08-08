@@ -5,7 +5,7 @@ namespace HospitalService.MessageConsumer.Data
 {
     public class MessageDbContext : DbContext
     {
-        public MessageDbContext(DbContextOptions options) : base(options) { }
+        public MessageDbContext(DbContextOptions<MessageDbContext> options) : base(options) { }
         public DbSet<Message> Messages { get; set; }
     }
 }
