@@ -3,6 +3,7 @@ using HospitalService.MessageConsumer.Repositories;
 using HospitalService.MessageConsumer.ServiceBusMessaging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using System.Reflection;
 
 namespace HospitalService.MessageConsumer
 {
@@ -27,7 +28,21 @@ namespace HospitalService.MessageConsumer
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "MESSAGECONSUMER API", Version = "v1" });
+                c.SwaggerDoc("v1",
+                    new OpenApiInfo
+                    {
+                        Title = "MESSAGECONSUMER API",
+                        Version = "v1",
+                        Description = "An ASP.NET Core Web API for managing messages from HospitalService",
+                        Contact = new OpenApiContact
+                        {
+                            Name = "GitHub",
+                            Url = new Uri("https://github.com/kravchenkoegorii/HospitalService.MessageConsumer.git")
+                        }
+                    });
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                c.IncludeXmlComments(xmlPath);
             });
             services.AddCors();
         }
@@ -43,7 +58,7 @@ namespace HospitalService.MessageConsumer
 
             app.UseRouting();
             app.UseSwagger();
-            app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "My MessageConsumer API"); });
+            app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "MessageConsumer API"); });
 
             app.UseAuthentication();
             app.UseAuthorization();
