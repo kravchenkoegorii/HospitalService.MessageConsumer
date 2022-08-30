@@ -33,7 +33,7 @@ namespace HospitalService.MessageConsumer.ServiceBusMessaging
             _processor = _client.CreateProcessor(QUEUE_NAME, _serviceBusProcessorOptions);
             _processor.ProcessMessageAsync += ProcessMessagesAsync;
             _processor.ProcessErrorAsync += ProcessErrorAsync;
-            await _processor.StartProcessingAsync().ConfigureAwait(false);
+            await _processor.StartProcessingAsync();
         }
 
         private Task ProcessErrorAsync(ProcessErrorEventArgs arg)
@@ -51,8 +51,8 @@ namespace HospitalService.MessageConsumer.ServiceBusMessaging
             var msj = args.Message;
             var myData = msj.Body.ToString();
             Console.WriteLine(myData);
-            await _processData.Process(myData).ConfigureAwait(false);
-            await args.CompleteMessageAsync(msj).ConfigureAwait(false);
+            await _processData.Process(myData);
+            await args.CompleteMessageAsync(msj);
         }
 
         public async ValueTask DisposeAsync()
